@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Grabadora de Voz - EldrinCook</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <h1>🎙️ Graba tu voz para el podcast</h1>
+    <button id="start">Comenzar Grabación</button>
+    <button id="stop" disabled>Detener</button>
+    <audio id="audio" controls></audio>
+
+    <script>
+      let mediaRecorder;
+      let audioChunks = [];
+
+      document.getElementById("start").onclick = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+
+        audioChunks = [];
+        mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
+
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(audioChunks, { type: "audio/webm" });
+          const audioURL = URL.createObjectURL(blob);
+          document.getElementById("audio").src = audioURL;
+
+          const formData = new FormData();
+          formData.append("audio", blob, "grabacion.webm");
+          await fetch("/upload", { method: "POST", body: formData });
+        };
+
+        document.getElementById("stop").disabled = false;
+      };
+
+      document.getElementById("stop").onclick = () => {
+        mediaRecorder.stop();
+        document.getElementById("stop").disabled = true;
+      };
+    </script>
+  </body>
+</html>

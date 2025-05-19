@@ -1,2 +1,45 @@
+# Node modules
 node_modules/
+
+# Archivos temporales y de logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# .env (variables de entorno)
+.env
+
+# Salida de builds o dist
+dist/
+build/
+
+# Grabaciones temporales o subidas
 uploads/
+grabaciones/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Archivos generados por ffmpeg (por si usás nombres intermedios)
+*.wav
+*.webm
+*.mp3
+
+# Archivos temporales de sistema
+*.swp
+*.bak
+*.tmp
+*.temp
+
+# Coverage (si haces tests)
+coverage/
+
