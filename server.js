@@ -6,6 +6,8 @@ const ffmpeg = require("fluent-ffmpeg");
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 const path = require("path");
+const cors = require("cors");
+app.use(cors({ origin: "https://speaks.eldrincook.com" }));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
