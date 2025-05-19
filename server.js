@@ -3,6 +3,8 @@ const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
 const ffmpeg = require("fluent-ffmpeg");
+const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 const path = require("path");
 
 const app = express();
