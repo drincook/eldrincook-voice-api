@@ -4,23 +4,39 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
+const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
-const path = require("path");
 const { google } = require("googleapis");
+
+// 🧠 Reconstruir el service-account.json desde variable base64
+if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+  const decoded = Buffer.from(
+    process.env.GOOGLE_SERVICE_ACCOUNT_BASE64,
+    "base64"
+  ).toString("utf-8");
+  fs.writeFileSync("service-account.json", decoded);
+}
+
+// 🎯 Autenticación con Google Drive
+const auth = new google.auth.GoogleAuth({
+  keyFile: "service-account.json",
+  scopes: ["https://www.googleapis.com/auth/drive.file"],
+});
+
+const drive = google.drive({ version: "v3", auth });
 
 const app = express();
 
-// 🌐 Habilitar CORS correctamente
+// 🌐 CORS habilitado
 app.use(
   cors({
-    origin: "https://speaks.eldrincook.com", // o "*" si querés que sea abierto
+    origin: "https://speaks.eldrincook.com",
     methods: ["GET", "POST"],
     credentials: true,
   })
 );
 
-// 🔧 Configurar FFmpeg
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const PORT = process.env.PORT || 3000;
@@ -28,43 +44,13 @@ const RECORDINGS_DIR = path.resolve(
   process.env.RECORDINGS_DIR || "public_html/grabaciones"
 );
 
-// 📁 Asegura que la carpeta de grabaciones exista
 if (!fs.existsSync(RECORDINGS_DIR)) {
   fs.mkdirSync(RECORDINGS_DIR, { recursive: true });
   console.log(`📁 Carpeta de grabaciones creada en: ${RECORDINGS_DIR}`);
 }
 
 const upload = multer({ dest: "uploads/" });
-
-// 📂 Servimos archivos estáticos desde public_html
 app.use(express.static("public_html"));
-
-// 🛠️ Configuración de Google Drive API
-const auth = new google.auth.GoogleAuth({
-  keyFile: "service-account.json", // Asegurate que exista en tu raíz
-  scopes: ["https://www.googleapis.com/auth/drive.file"],
-});
-
-const drive = google.drive({ version: "v3", auth });
-
-async function uploadToDrive(filePath, filename) {
-  const fileMetadata = {
-    name: filename,
-  };
-
-  const media = {
-    mimeType: "audio/mpeg",
-    body: fs.createReadStream(filePath),
-  };
-
-  const response = await drive.files.create({
-    resource: fileMetadata,
-    media,
-    fields: "id, webViewLink",
-  });
-
-  return response.data;
-}
 
 app.post("/upload", upload.single("audio"), async (req, res) => {
   if (!req.file) return res.status(400).send("❌ No se subió ningún archivo.");
@@ -74,39 +60,55 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
   const webmFinalPath = path.join(RECORDINGS_DIR, `${baseFilename}.webm`);
   const mp3FinalPath = path.join(RECORDINGS_DIR, `${baseFilename}.mp3`);
 
+  // Mover archivo .webm
   fs.rename(tempPath, webmFinalPath, (err) => {
     if (err) {
       console.error("❌ Error al mover archivo:", err);
       return res.status(500).send("Error al guardar el archivo.");
     }
 
+    // Convertir a mp3
     ffmpeg(webmFinalPath)
       .toFormat("mp3")
       .on("end", async () => {
         try {
-          const publicURL = process.env.PUBLIC_BASE_URL || `/grabaciones`;
+          // Subir el archivo a Google Drive
+          const fileMetadata = {
+            name: `${baseFilename}.mp3`,
+            parents: [process.env.DRIVE_FOLDER_ID], // ID de la carpeta en Drive
+          };
 
-          const driveResult = await uploadToDrive(
-            
-           
-          
-            mp3FinalPath,
-            `${baseFilename}.mp3`
-          );
-             
+          const media = {
+            mimeType: "audio/mpeg",
+            body: fs.createReadStream(mp3FinalPath),
+          };
 
-          res.json({
-            message:
-              "✅ Grabación subida, convertida y enviada a Google Drive con éxito.",
-            urls: {
-              webm: `${publicURL}/${baseFilename}.webm`,
-              mp3: `${publicURL}/${baseFilename}.mp3`,
-              driveLink: driveResult.webViewLink,
+          const response = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: "id",
+          });
+
+          const fileId = response.data.id;
+
+          // Hacer público el archivo
+          await drive.permissions.create({
+            fileId: fileId,
+            requestBody: {
+              role: "reader",
+              type: "anyone",
             },
           });
-        } catch (error) {
-          console.error("❌ Error al subir a Google Drive:", error);
-          res.status(500).send("Error al subir el archivo a Google Drive.");
+
+          const publicUrl = `https://drive.google.com/uc?id=${fileId}&export=download`;
+
+          res.json({
+            message: "✅ Grabación subida y convertida con éxito.",
+            googleDriveUrl: publicUrl,
+          });
+        } catch (err) {
+          console.error("❌ Error al subir a Google Drive:", err);
+          res.status(500).send("Error al subir a Google Drive.");
         }
       })
       .on("error", (err) => {
