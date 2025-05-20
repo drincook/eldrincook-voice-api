@@ -43,3 +43,4 @@ grabaciones/
 # Coverage (si haces tests)
 coverage/
 
+service-account.json
