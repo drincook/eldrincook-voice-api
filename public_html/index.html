@@ -33,7 +33,10 @@
 
           const formData = new FormData();
           formData.append("audio", blob, "grabacion.webm");
-          await fetch("/upload", { method: "POST", body: formData });
+          await fetch("https://eldrincook-voice-api.onrender.com/upload", {
+            method: "POST",
+            body: formData,
+          });
         };
 
         document.getElementById("stop").disabled = false;
