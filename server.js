@@ -46,7 +46,8 @@ const app = express();
 app.use(
   cors({
     origin: "https://speaks.eldrincook.com",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
     credentials: true,
   })
 );

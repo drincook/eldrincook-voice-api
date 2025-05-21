@@ -36,6 +36,7 @@
           await fetch("https://eldrincook-voice-api.onrender.com/upload", {
             method: "POST",
             body: formData,
+            credentials: "include",
           });
         };
 
