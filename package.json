@@ -1,14 +1,17 @@
 {
   "name": "grabadora-backend",
   "version": "1.0.0",
+  "description": "API para grabar, convertir y subir audios a Google Drive",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "cors": "^2.8.5",
