@@ -9,21 +9,32 @@ const ffmpeg = require("fluent-ffmpeg");
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { google } = require("googleapis");
 
-// 🧠 Reconstruir el service-account.json desde variable base64
+// 🔐 Configurar credenciales de Google según entorno
 const jsonPath = path.join(__dirname, "service-account.json");
 
-try {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_BASE64;
-  const buffer = Buffer.from(raw, "base64");
-  fs.writeFileSync(jsonPath, buffer); // Guardar como archivo binario directamente
-  console.log("✅ service-account.json creado correctamente");
-} catch (err) {
-  console.error("❌ Error creando service-account.json:", err);
+if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+  try {
+    const buffer = Buffer.from(
+      process.env.GOOGLE_SERVICE_ACCOUNT_BASE64,
+      "base64"
+    );
+    fs.writeFileSync(jsonPath, buffer);
+    console.log("✅ service-account.json generado desde variable de entorno");
+  } catch (err) {
+    console.error("❌ Error creando service-account.json desde base64:", err);
+  }
+} else if (fs.existsSync(jsonPath)) {
+  console.log("✅ Archivo 'service-account.json' encontrado localmente.");
+} else {
+  console.error(
+    "❌ No se encontró 'service-account.json' ni GOOGLE_SERVICE_ACCOUNT_BASE64. Deteniendo servidor."
+  );
+  process.exit(1);
 }
 
 // 🎯 Autenticación con Google Drive
 const auth = new google.auth.GoogleAuth({
-  keyFile: "service-account.json",
+  keyFile: jsonPath,
   scopes: ["https://www.googleapis.com/auth/drive.file"],
 });
 
@@ -42,7 +53,7 @@ app.use(
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 const RECORDINGS_DIR = path.resolve(
   process.env.RECORDINGS_DIR || "public_html/grabaciones"
 );
