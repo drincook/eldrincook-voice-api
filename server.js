@@ -42,7 +42,7 @@ app.use(
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-const PORT = process.env.PORT || 1000;
+const PORT = process.env.PORT || 10000;
 const RECORDINGS_DIR = path.resolve(
   process.env.RECORDINGS_DIR || "public_html/grabaciones"
 );
