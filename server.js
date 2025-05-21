@@ -10,12 +10,15 @@ const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
 const { google } = require("googleapis");
 
 // 🧠 Reconstruir el service-account.json desde variable base64
-if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
-  const decoded = Buffer.from(
-    process.env.GOOGLE_SERVICE_ACCOUNT_BASE64,
-    "base64"
-  ).toString("utf-8");
-  fs.writeFileSync("service-account.json", decoded);
+const jsonPath = path.join(__dirname, "service-account.json");
+
+try {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_BASE64;
+  const buffer = Buffer.from(raw, "base64");
+  fs.writeFileSync(jsonPath, buffer); // Guardar como archivo binario directamente
+  console.log("✅ service-account.json creado correctamente");
+} catch (err) {
+  console.error("❌ Error creando service-account.json:", err);
 }
 
 // 🎯 Autenticación con Google Drive
