@@ -17,7 +17,7 @@
     "google drive",
     "eldrincook"
   ],
-  "author": "",
+  "author": "Drin",
   "license": "ISC",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
