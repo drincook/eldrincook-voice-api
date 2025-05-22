@@ -9,7 +9,14 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": [],
+  "keywords": [
+    "voice",
+    "ffmpeg",
+    "api",
+    "express",
+    "google drive",
+    "eldrincook"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
