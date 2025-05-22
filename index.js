@@ -67,6 +67,8 @@ if (!fs.existsSync(RECORDINGS_DIR)) {
 const upload = multer({ dest: "uploads/" });
 app.use(express.static("public_html"));
 
+// 🔍 Endpoint para listar archivos subidos por la cuenta de servicio
+
 app.post("/upload", upload.single("audio"), async (req, res) => {
   if (!req.file) return res.status(400).send("❌ No se subió ningún archivo.");
 
@@ -132,6 +134,20 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
       })
       .save(mp3FinalPath);
   });
+});
+
+app.get("/files", async (req, res) => {
+  try {
+    const response = await drive.files.list({
+      pageSize: 10,
+      fields: "files(id, name, createdTime, webViewLink)",
+    });
+    console.log("📂 Archivos listados correctamente");
+    res.json(response.data.files);
+  } catch (err) {
+    console.error("❌ Error al listar archivos:", err);
+    res.status(500).send("Error al obtener archivos");
+  }
 });
 
 app.listen(PORT, () => {
