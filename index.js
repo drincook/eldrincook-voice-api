@@ -40,6 +40,20 @@ const auth = new google.auth.GoogleAuth({
 
 const drive = google.drive({ version: "v3", auth });
 
+app.get("/files", async (req, res) => {
+  try {
+    const response = await drive.files.list({
+      pageSize: 10,
+      fields: "files(id, name, createdTime, webViewLink)",
+    });
+
+    res.json(response.data.files);
+  } catch (err) {
+    console.error("❌ Error al listar archivos:", err);
+    res.status(500).send("Error al obtener archivos");
+  }
+});
+
 const app = express();
 
 // 🌐 CORS habilitado
