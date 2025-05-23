@@ -73,7 +73,9 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
   if (!req.file) return res.status(400).send("❌ No se subió ningún archivo.");
 
   const tempPath = req.file.path;
-  const baseFilename = `grabacion-${Date.now()}`;
+  const baseFilename = req.body.nombrePersonalizado
+    ? req.body.nombrePersonalizado
+    : `grabacion-${Date.now()}`;
   const webmFinalPath = path.join(RECORDINGS_DIR, `${baseFilename}.webm`);
   const mp3FinalPath = path.join(RECORDINGS_DIR, `${baseFilename}.mp3`);
 
