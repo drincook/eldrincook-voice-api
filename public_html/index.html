@@ -1,14 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <title>Grabadora de Voz - EldrinCook</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="css/style.css" rel="stylesheet" />
+    <style>
+      #status {
+        padding: 10px;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      #status.loading {
+        color: #ffaa00;
+      }
+      #status.success {
+        color: #28a745;
+      }
+      #status.error {
+        color: #dc3545;
+      }
+    </style>
   </head>
   <body>
     <h1>🎙️ Graba tu voz para el podcast</h1>
-    <button id="start">Comenzar Grabación</button>
+
+    <label for="nombre">📛 Nombre de la grabación:</label>
+    <input type="text" id="nombre" placeholder="ej: capitulo-intro" />
+    <br /><br />
+
+    <p id="status" class="loading">🔄 Cargando servidor...</p>
+    <button id="start" disabled>Comenzar Grabación</button>
     <button id="stop" disabled>Detener</button>
     <audio id="audio" controls></audio>
 
@@ -16,10 +37,33 @@
       let mediaRecorder;
       let audioChunks = [];
 
-      document.getElementById("start").onclick = async () => {
+      const status = document.getElementById("status");
+      const startBtn = document.getElementById("start");
+      const stopBtn = document.getElementById("stop");
+      const inputNombre = document.getElementById("nombre");
+
+      async function pingBackend() {
+        try {
+          await fetch("https://eldrincook-voice-api.onrender.com/files");
+          status.textContent = "✅ Servidor activo. Puedes grabar tu voz.";
+          status.className = "success";
+          startBtn.disabled = false;
+        } catch (err) {
+          status.textContent = "⚠️ El servidor está tardando en responder...";
+          status.className = "error";
+        }
+      }
+
+      // 🚀 Ping al cargar
+      window.addEventListener("DOMContentLoaded", pingBackend);
+
+      startBtn.onclick = async () => {
+        await pingBackend(); // seguridad extra
+
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
+
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.start();
 
@@ -31,21 +75,43 @@
           const audioURL = URL.createObjectURL(blob);
           document.getElementById("audio").src = audioURL;
 
+          const nombreLimpio = inputNombre.value.trim();
+          const nombreArchivo =
+            nombreLimpio !== "" ? nombreLimpio : `grabacion-${Date.now()}`;
+
           const formData = new FormData();
-          formData.append("audio", blob, "grabacion.webm");
-          await fetch("https://eldrincook-voice-api.onrender.com/upload", {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-          });
+          formData.append("audio", blob, `${nombreArchivo}.webm`);
+          formData.append("nombrePersonalizado", nombreArchivo); // clave para el backend
+
+          try {
+            const response = await fetch(
+              "https://eldrincook-voice-api.onrender.com/upload",
+              {
+                method: "POST",
+                body: formData,
+                credentials: "include",
+              }
+            );
+
+            const result = await response.json();
+            console.log("✅ Subido:", result);
+
+            status.innerHTML = `✅ Grabación enviada.<br><a href="${result.googleDriveUrl}" target="_blank">⬇️ Descargar MP3</a>`;
+            status.className = "success";
+          } catch (err) {
+            console.error("❌ Error al subir:", err);
+            status.textContent = "❌ Error al subir la grabación.";
+            status.className = "error";
+            alert("Hubo un error al subir tu grabación.");
+          }
         };
 
-        document.getElementById("stop").disabled = false;
+        stopBtn.disabled = false;
       };
 
-      document.getElementById("stop").onclick = () => {
+      stopBtn.onclick = () => {
         mediaRecorder.stop();
-        document.getElementById("stop").disabled = true;
+        stopBtn.disabled = true;
       };
     </script>
   </body>
