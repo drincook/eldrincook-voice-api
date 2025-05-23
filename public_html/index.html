@@ -9,15 +9,28 @@
         padding: 10px;
         margin-top: 10px;
         font-weight: bold;
+        transition: all 0.3s ease;
       }
       #status.loading {
         color: #ffaa00;
       }
       #status.success {
         color: #28a745;
+        animation: pulse 0.6s ease;
       }
       #status.error {
         color: #dc3545;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
     </style>
   </head>
@@ -33,6 +46,13 @@
     <button id="stop" disabled>Detener</button>
     <audio id="audio" controls></audio>
 
+    <!-- 🔊 Sonido de éxito -->
+    <audio
+      id="success-sound"
+      src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3cf9ccf3ca.mp3"
+      preload="auto"
+    ></audio>
+
     <script>
       let mediaRecorder;
       let audioChunks = [];
@@ -41,6 +61,7 @@
       const startBtn = document.getElementById("start");
       const stopBtn = document.getElementById("stop");
       const inputNombre = document.getElementById("nombre");
+      const successSound = document.getElementById("success-sound");
 
       async function pingBackend() {
         try {
@@ -54,11 +75,10 @@
         }
       }
 
-      // 🚀 Ping al cargar
       window.addEventListener("DOMContentLoaded", pingBackend);
 
       startBtn.onclick = async () => {
-        await pingBackend(); // seguridad extra
+        await pingBackend();
 
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
@@ -77,11 +97,13 @@
 
           const nombreLimpio = inputNombre.value.trim();
           const nombreArchivo =
-            nombreLimpio !== "" ? nombreLimpio : `grabacion-${Date.now()}`;
+            nombreLimpio !== ""
+              ? nombreLimpio.replace(/\s+/g, "_")
+              : `grabacion-${Date.now()}`;
 
           const formData = new FormData();
           formData.append("audio", blob, `${nombreArchivo}.webm`);
-          formData.append("nombrePersonalizado", nombreArchivo); // clave para el backend
+          formData.append("nombrePersonalizado", nombreArchivo);
 
           try {
             const response = await fetch(
@@ -96,13 +118,20 @@
             const result = await response.json();
             console.log("✅ Subido:", result);
 
-            status.innerHTML = `✅ Grabación enviada como: <strong>${result.nombre}</strong><br><a href="${result.googleDriveUrl}" target="_blank">⬇️ Descargar MP3</a>`;
+            // ✅ Mensaje visual + animación
+            status.innerHTML = `
+              ✅ Grabación enviada como: <strong>${result.nombre}</strong><br>
+              <a href="${result.googleDriveUrl}" target="_blank">⬇️ Descargar MP3</a>
+            `;
             status.className = "success";
 
-            // 🧲 Descarga automática
+            // 🔊 Sonido de éxito
+            successSound.play();
+
+            // 💾 Descargar automáticamente
             const a = document.createElement("a");
             a.href = result.googleDriveUrl;
-            a.download = result.nombre || "grabacion.mp3"; // nombre sugerido
+            a.download = result.nombre || "grabacion.mp3";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
