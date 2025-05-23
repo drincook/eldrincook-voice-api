@@ -98,6 +98,14 @@
 
             status.innerHTML = `✅ Grabación enviada como: <strong>${result.nombre}</strong><br><a href="${result.googleDriveUrl}" target="_blank">⬇️ Descargar MP3</a>`;
             status.className = "success";
+
+            // 🧲 Descarga automática
+            const a = document.createElement("a");
+            a.href = result.googleDriveUrl;
+            a.download = result.nombre || "grabacion.mp3"; // nombre sugerido
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
           } catch (err) {
             console.error("❌ Error al subir:", err);
             status.textContent = "❌ Error al subir la grabación.";
