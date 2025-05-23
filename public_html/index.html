@@ -96,7 +96,10 @@
             const result = await response.json();
             console.log("✅ Subido:", result);
 
-            status.innerHTML = `✅ Grabación enviada.<br><a href="${result.googleDriveUrl}" target="_blank">⬇️ Descargar MP3</a>`;
+            status.innerHTML = `
+  ✅ Grabación enviada como: <strong>${result.nombre}</strong><br>
+  <a href="${result.googleDriveUrl}" target="_blank">⬇️ Descargar MP3</a>
+`;
             status.className = "success";
           } catch (err) {
             console.error("❌ Error al subir:", err);

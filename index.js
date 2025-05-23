@@ -74,7 +74,7 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
 
   const tempPath = req.file.path;
   const baseFilename = req.body.nombrePersonalizado
-    ? req.body.nombrePersonalizado
+    ? req.body.nombrePersonalizado.trim().replace(/\s+/g, "_")
     : `grabacion-${Date.now()}`;
   const webmFinalPath = path.join(RECORDINGS_DIR, `${baseFilename}.webm`);
   const mp3FinalPath = path.join(RECORDINGS_DIR, `${baseFilename}.mp3`);
@@ -124,6 +124,7 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
           res.json({
             message: "✅ Grabación subida y convertida con éxito.",
             googleDriveUrl: publicUrl,
+            nombre: `${baseFilename}.mp3`,
           });
         } catch (err) {
           console.error("❌ Error al subir a Google Drive:", err);
