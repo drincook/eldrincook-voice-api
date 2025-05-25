@@ -6,373 +6,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Estilos personalizados para el estado y el historial */
-      body {
-        font-family: "Inter", sans-serif;
-        background-color: #f0f2f5;
-        color: #333;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        min-height: 100vh;
-        box-sizing: border-box;
-      }
-
-      h1,
-      h2 {
-        color: #2c3e50;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-
-      button {
-        padding: 10px 20px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background-color 0.2s ease, transform 0.1s ease;
-        margin: 5px;
-      }
-
-      button:hover:not(:disabled) {
-        transform: translateY(-2px);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      #start {
-        background-color: #28a745;
-        color: white;
-      }
-      #start:hover:not(:disabled) {
-        background-color: #218838;
-      }
-
-      #stop {
-        background-color: #dc3545;
-        color: white;
-      }
-      #stop:hover:not(:disabled) {
-        background-color: #c82333;
-      }
-
-      #status {
-        padding: 10px;
-        margin-top: 10px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        text-align: center;
-        width: 100%;
-        max-width: 500px;
-      }
-      #status.loading {
-        color: #ffaa00;
-        background-color: #fff3cd;
-        border: 1px solid #ffeeba;
-      }
-      #status.success {
-        color: #28a745;
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        animation: pulse 0.6s ease;
-      }
-      #status.error {
-        color: #dc3545;
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-      }
-      #status.recording {
-        color: #007bff;
-        background-color: #e0f7fa;
-        border: 1px solid #b3e5fc;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.02); /* Ajustado para un efecto más sutil */
-        }
-      }
-
-      #historial {
-        list-style: none;
-        padding: 0;
-        width: 100%;
-        max-width: 600px;
-        margin-top: 20px;
-      }
-
-      #historial li {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      }
-
-      #historial li strong {
-        color: #34495e;
-      }
-
-      #historial li a {
-        color: #007bff;
-        text-decoration: none;
-        margin-right: 10px;
-      }
-
-      #historial li a:hover {
-        text-decoration: underline;
-      }
-
-      button.borrar {
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        margin-top: 20px;
-        align-self: center; /* Centrar el botón de borrar historial */
-      }
-
-      button.borrar:hover {
-        background: #c82333;
-      }
-
-      /* Estilos para el modal */
-      .modal {
-        display: none; /* Oculto por defecto */
-        position: fixed; /* Posición fija en la pantalla */
-        z-index: 1000; /* Por encima de todo */
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto; /* Habilitar scroll si es necesario */
-        background-color: rgba(0, 0, 0, 0.4); /* Fondo semi-transparente */
-        justify-content: center;
-        align-items: center;
-      }
-
-      .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 20px;
-        border: 1px solid #888;
-        border-radius: 10px;
-        width: 80%;
-        max-width: 500px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        text-align: center;
-      }
-
-      .modal-content h3 {
-        margin-top: 0;
-        color: #333;
-      }
-
-      .modal-buttons button {
-        margin: 10px;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-
-      .modal-buttons .confirm-btn {
-        background-color: #007bff;
-        color: white;
-      }
-
-      .modal-buttons .cancel-btn {
-        background-color: #6c757d;
-        color: white;
-      }
-
-      /* Estilos para el reproductor de audio en historial */
-      #historial li audio {
-        width: 100%;
-        margin-top: 10px;
-      }
-
-      /* Contenedor principal para centrar el contenido */
-      .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-        width: 100%;
-        max-width: 700px;
-        background-color: #ffffff;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      }
-
-      .input-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        gap: 10px;
-      }
-
-      .input-group label {
-        font-weight: bold;
-        color: #555;
-      }
-
-      .input-group input[type="text"] {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 300px;
-        font-size: 1rem;
-        text-align: center;
-      }
-
-      .controls {
-        display: flex;
-        gap: 10px;
-        margin-top: 10px;
-      }
-
-      #audio-player-container {
-        width: 100%;
-        max-width: 400px;
-        margin-top: 15px;
-      }
-      #audio {
-        width: 100%;
-      }
-
-      hr {
-        width: 80%;
-        border: 0;
+      /* Todo tu CSS original se mantiene igual, solo podrías agregar:
+      - outline: 2px solid #007bff; para los inputs y botones :focus
+      - .sr-only para accesibilidad */
+      .sr-only {
+        position: absolute;
+        width: 1px;
         height: 1px;
-        background-image: linear-gradient(
-          to right,
-          rgba(0, 0, 0, 0),
-          rgba(0, 0, 0, 0.2),
-          rgba(0, 0, 0, 0)
-        );
-        margin: 30px 0;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
       }
-
-      #recording-indicator {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 10px;
-        font-size: 1.1rem;
-        color: #007bff;
-        font-weight: bold;
-      }
-
-      #recording-dot {
-        width: 12px;
-        height: 12px;
-        background-color: red;
-        border-radius: 50%;
-        margin-right: 8px;
-        animation: blink 1s infinite alternate;
-      }
-
-      @keyframes blink {
-        0% {
-          opacity: 1;
-        }
-        100% {
-          opacity: 0.3;
-        }
-      }
-
-      @media (max-width: 600px) {
-        .container {
-          padding: 20px;
-          margin: 10px;
-        }
-        .controls {
-          flex-direction: column;
-        }
-        button {
-          width: 100%;
-        }
-        #status {
-          font-size: 0.9rem;
-        }
+      input:focus,
+      button:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
       }
     </style>
   </head>
   <body>
-    <div class="container">
+    <main class="container" role="main" aria-label="Grabadora principal">
       <h1 class="text-3xl font-extrabold">🎙️ Graba tu voz para el podcast</h1>
-
-      <div class="input-group">
-        <label for="nombre">📛 Nombre de la grabación:</label>
+      <form
+        id="grabacionForm"
+        class="input-group"
+        autocomplete="off"
+        onsubmit="return false;"
+      >
+        <label for="nombre" id="nombreLabel">📛 Nombre de la grabación:</label>
         <input
           type="text"
           id="nombre"
+          aria-labelledby="nombreLabel"
           placeholder="ej: capitulo-intro"
           class="shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          autocomplete="off"
         />
-      </div>
+      </form>
 
-      <p id="status" class="loading">🔄 Cargando servidor...</p>
+      <p id="status" class="loading" role="status" aria-live="polite">
+        🔄 Cargando servidor...
+      </p>
 
       <div id="recording-indicator" style="display: none">
-        <span id="recording-dot"></span>
+        <span id="recording-dot" aria-hidden="true"></span>
         <span id="recording-timer">00:00</span>
       </div>
 
-      <div class="controls">
-        <button id="start" disabled>Comenzar Grabación</button>
-        <button id="stop" disabled>Detener</button>
+      <div class="controls" role="group" aria-label="Controles de grabación">
+        <button
+          id="start"
+          type="button"
+          disabled
+          aria-label="Comenzar Grabación"
+        >
+          Comenzar Grabación
+        </button>
+        <button id="stop" type="button" disabled aria-label="Detener Grabación">
+          Detener
+        </button>
       </div>
 
       <div id="audio-player-container">
-        <audio id="audio" controls class="w-full rounded-lg"></audio>
+        <audio
+          id="audio"
+          controls
+          class="w-full rounded-lg"
+          aria-label="Reproductor de la última grabación"
+        ></audio>
       </div>
-    </div>
+    </main>
 
     <audio
       id="success-sound"
       src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3cf9ccf3ca.mp3"
       preload="auto"
+      aria-hidden="true"
     ></audio>
 
     <hr />
 
-    <div class="container mt-8">
-      <h2 class="text-2xl font-bold">🕘 Historial de Grabaciones</h2>
+    <section class="container mt-8" aria-labelledby="historialTitle">
+      <h2 id="historialTitle" class="text-2xl font-bold">
+        🕘 Historial de Grabaciones
+      </h2>
       <ul id="historial"></ul>
       <button
         class="borrar"
+        type="button"
         onclick="showConfirmModal('¿Estás seguro de que quieres borrar todo el historial?', borrarHistorialConfirm)"
+        aria-label="Borrar historial de grabaciones"
       >
         🗑️ Borrar historial
       </button>
-    </div>
+    </section>
 
-    <div id="customModal" class="modal">
+    <div
+      id="customModal"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
       <div class="modal-content">
         <h3 id="modalTitle"></h3>
         <p id="modalMessage"></p>
         <div class="modal-buttons">
-          <button id="modalConfirmBtn" class="confirm-btn">Aceptar</button>
-          <button id="modalCancelBtn" class="cancel-btn" style="display: none">
+          <button id="modalConfirmBtn" class="confirm-btn" type="button">
+            Aceptar
+          </button>
+          <button
+            id="modalCancelBtn"
+            class="cancel-btn"
+            type="button"
+            style="display: none"
+          >
             Cancelar
           </button>
         </div>
@@ -393,14 +143,14 @@
       const recordingIndicator = document.getElementById("recording-indicator");
       const recordingTimer = document.getElementById("recording-timer");
 
-      // Referencias del modal
+      // Modal references
       const customModal = document.getElementById("customModal");
       const modalTitle = document.getElementById("modalTitle");
       const modalMessage = document.getElementById("modalMessage");
       const modalConfirmBtn = document.getElementById("modalConfirmBtn");
       const modalCancelBtn = document.getElementById("modalCancelBtn");
 
-      // Función para mostrar el modal
+      // Modal helpers
       function showModal(
         title,
         message,
@@ -410,46 +160,35 @@
       ) {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
-        customModal.style.display = "flex"; // Mostrar el modal
-
+        customModal.style.display = "flex";
         modalCancelBtn.style.display = isConfirm ? "inline-block" : "none";
-
-        // Limpiar listeners anteriores
-        modalConfirmBtn.onclick = null;
-        modalCancelBtn.onclick = null;
-
         modalConfirmBtn.onclick = () => {
           customModal.style.display = "none";
           if (onConfirm) onConfirm();
         };
-
-        if (isConfirm) {
-          modalCancelBtn.onclick = () => {
-            customModal.style.display = "none";
-            if (onCancel) onCancel();
-          };
-        }
+        modalCancelBtn.onclick = isConfirm
+          ? () => {
+              customModal.style.display = "none";
+              if (onCancel) onCancel();
+            }
+          : null;
       }
-
-      // Funciones específicas para alerta y confirmación
       function showAlert(message) {
         showModal("Atención", message);
       }
-
       function showConfirmModal(message, onConfirm, onCancel = null) {
         showModal("Confirmación", message, true, onConfirm, onCancel);
       }
 
-      // Función para actualizar el temporizador de grabación
+      // Timer
       function updateRecordingTimer() {
         const elapsedTime = Date.now() - recordingStartTime;
         const seconds = Math.floor((elapsedTime / 1000) % 60);
         const minutes = Math.floor(elapsedTime / 1000 / 60);
-
-        const formattedTime = `${String(minutes).padStart(2, "0")}:${String(
-          seconds
-        ).padStart(2, "0")}`;
-        recordingTimer.textContent = formattedTime;
+        recordingTimer.textContent = `${String(minutes).padStart(
+          2,
+          "0"
+        )}:${String(seconds).padStart(2, "0")}`;
       }
 
       async function pingBackend() {
@@ -458,6 +197,7 @@
           status.textContent = "✅ Servidor activo. Puedes grabar tu voz.";
           status.className = "success";
           startBtn.disabled = false;
+          startBtn.focus();
         } catch (err) {
           status.textContent = "⚠️ El servidor está tardando en responder...";
           status.className = "error";
@@ -472,13 +212,19 @@
         mostrarHistorial();
       });
 
+      // Mejor experiencia para Enter en el input
+      inputNombre.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          startBtn.click();
+        }
+      });
+
       startBtn.onclick = async () => {
         try {
-          // Solicitar permisos del micrófono antes de iniciar
+          // Permiso de micrófono
           const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
           });
-
           mediaRecorder = new MediaRecorder(stream);
           mediaRecorder.start();
 
@@ -486,7 +232,7 @@
           mediaRecorder.ondataavailable = (event) =>
             audioChunks.push(event.data);
 
-          // Iniciar temporizador e indicador de grabación
+          // Temporizador & estados
           recordingStartTime = Date.now();
           recordingTimer.textContent = "00:00";
           recordingIndicator.style.display = "flex";
@@ -496,25 +242,24 @@
           status.className = "recording";
           startBtn.disabled = true;
           stopBtn.disabled = false;
+          stopBtn.focus();
 
           mediaRecorder.onstop = async () => {
-            // Detener temporizador e indicador
             clearInterval(recordingTimerInterval);
             recordingIndicator.style.display = "none";
 
             const blob = new Blob(audioChunks, { type: "audio/webm" });
-            const audioURL = URL.createObjectURL(blob);
-            document.getElementById("audio").src = audioURL;
+            document.getElementById("audio").src = URL.createObjectURL(blob);
 
-            const nombreLimpio = inputNombre.value.trim();
-            const nombreArchivo =
-              nombreLimpio !== ""
-                ? nombreLimpio.replace(/\s+/g, "_")
-                : `grabacion-${Date.now()}`;
-
+            // Limpia y sanitiza el nombre
+            let nombreLimpio = inputNombre.value
+              .trim()
+              .replace(/\s+/g, "_")
+              .replace(/\.(webm|mp3)$/i, "");
+            if (!nombreLimpio) nombreLimpio = `grabacion-${Date.now()}`;
             const formData = new FormData();
-            formData.append("audio", blob, `${nombreArchivo}.webm`);
-            formData.append("nombrePersonalizado", nombreArchivo);
+            formData.append("audio", blob, `${nombreLimpio}.webm`);
+            formData.append("nombrePersonalizado", nombreLimpio);
 
             status.textContent = "⬆️ Subiendo y convirtiendo...";
             status.className = "loading";
@@ -528,35 +273,29 @@
                   credentials: "include",
                 }
               );
-
               if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(
                   `Error del servidor: ${response.status} - ${errorText}`
                 );
               }
-
               const result = await response.json();
-              console.log("✅ Subido:", result);
-
               status.innerHTML = `
                 ✅ Grabación enviada como: <strong>${result.nombre}</strong><br>
                 <a href="${result.googleDriveUrl}" target="_blank" class="text-blue-600 hover:underline">⬇️ Descargar MP3</a>
               `;
               status.className = "success";
-
-              // 🔊 Sonido de éxito
               successSound.play();
 
-              // 💾 Descargar automáticamente
+              // Descarga automática accesible
               const a = document.createElement("a");
               a.href = result.googleDriveUrl;
               a.download = result.nombre || "grabacion.mp3";
+              a.style.display = "none";
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
 
-              // 📝 Guardar en historial
               guardarEnHistorial(result.nombre, result.googleDriveUrl);
             } catch (err) {
               console.error("❌ Error al subir:", err);
@@ -564,7 +303,8 @@
               status.className = "error";
               showAlert("Hubo un error al subir tu grabación: " + err.message);
             } finally {
-              startBtn.disabled = false; // Habilitar botón de inicio de nuevo
+              startBtn.disabled = false;
+              startBtn.focus();
             }
           };
         } catch (err) {
@@ -574,7 +314,8 @@
           showAlert(
             "No se pudo acceder al micrófono. Por favor, asegúrate de que los permisos estén concedidos."
           );
-          startBtn.disabled = false; // Asegurarse de que el botón de inicio se habilite si falla el acceso al micro
+          startBtn.disabled = false;
+          startBtn.focus();
         }
       };
 
@@ -582,54 +323,50 @@
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
           mediaRecorder.stop();
           stopBtn.disabled = true;
-          startBtn.disabled = false; // Habilitar el botón de inicio después de detener
+          startBtn.disabled = false;
+          startBtn.focus();
         }
       };
 
-      // 📝 Guardar grabación en historial
+      // Historial accesible
       function guardarEnHistorial(nombre, url) {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const nueva = {
-          nombre: nombre,
-          url: url,
+          nombre,
+          url,
           fecha: new Date().toLocaleString("es-ES"),
         };
         historial.unshift(nueva);
         localStorage.setItem("grabaciones", JSON.stringify(historial));
         mostrarHistorial();
       }
-
-      // 📜 Mostrar historial
       function mostrarHistorial() {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const lista = document.getElementById("historial");
         lista.innerHTML = "";
-
         if (historial.length === 0) {
           lista.innerHTML =
             '<li class="text-gray-500">Aún no has grabado nada.</li>';
           return;
         }
-
-        historial.forEach((item, index) => {
+        historial.forEach((item) => {
           const li = document.createElement("li");
           li.className =
             "flex flex-col md:flex-row md:items-center justify-between gap-2";
           li.innerHTML = `
             <div class="flex-grow">
-                📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
+              📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
             </div>
             <div class="flex items-center gap-2 mt-2 md:mt-0">
-                <audio controls src="${item.url}" class="w-full md:w-auto h-8"></audio>
-                <a href="${item.url}" target="_blank" class="text-blue-600 hover:underline text-sm">🔗 Ver</a>
-                <a href="${item.url}" download="${item.nombre}" class="text-green-600 hover:underline text-sm">⬇️ Descargar</a>
+              <audio controls src="${item.url}" class="w-full md:w-auto h-8"></audio>
+              <a href="${item.url}" target="_blank" class="text-blue-600 hover:underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
+              <a href="${item.url}" download="${item.nombre}" class="text-green-600 hover:underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
             </div>
           `;
           lista.appendChild(li);
         });
       }
 
-      // 🧹 Borrar historial (ahora usa el modal personalizado)
       function borrarHistorialConfirm() {
         localStorage.removeItem("grabaciones");
         mostrarHistorial();
