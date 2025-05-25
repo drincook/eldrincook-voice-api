@@ -112,16 +112,21 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
     // Configurar la conversión y el filtro de reducción de ruido
     let ffmpegCommand = ffmpeg(webmFinalPath);
 
-    // Añadir opciones para forzar el audio a mono y una tasa de muestreo común (48kHz)
-    // Esto ayuda a evitar el error "Error reinitializing filters! Invalid argument"
-    // ya que arnndn a menudo espera entradas con estas propiedades.
-    ffmpegCommand
-      .audioChannels(1) // Forzar a mono
-      .audioFrequency(48000); // Forzar a 48kHz (o 16000 para modelos entrenados en 16kHz)
+    // Construir la cadena de filtros de audio
+    let audioFilters = [];
 
-    // Si el modelo RNNoise existe, aplicar el filtro de reducción de ruido
+    // Primero, forzar el audio a mono y una tasa de muestreo de 16kHz,
+    // que es común para los modelos RNNoise y ayuda a evitar errores de re-inicialización.
+    // Usamos el filtro 'asetnsamples' para ajustar la tasa de muestreo y 'channelsplit' para mono.
+    // Opciones más directas como .audioChannels() y .audioFrequency() pueden no funcionar
+    // bien con filtros complejos si no se aplican en el orden correcto o si el codec de entrada
+    // ya está fijado. Usar '-ac' y '-ar' como opciones globales es más robusto.
+    ffmpegCommand.addOption("-ac", "1"); // Forzar a mono
+    ffmpegCommand.addOption("-ar", "16000"); // Forzar a 16kHz (común para modelos RNNoise)
+
+    // Si el modelo RNNoise existe, añadir el filtro de reducción de ruido a la cadena
     if (fs.existsSync(RNNOISE_MODEL_PATH)) {
-      ffmpegCommand.addOption("-af", `arnndn=m=${RNNOISE_MODEL_PATH}`);
+      audioFilters.push(`arnndn=m=${RNNOISE_MODEL_PATH}`);
       console.log(
         `✨ Aplicando reducción de ruido con arnndn usando el modelo: ${RNNOISE_MODEL_PATH}`
       );
@@ -129,6 +134,11 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
       console.warn(
         "⚠️ No se aplicó reducción de ruido: Modelo RNNoise no encontrado."
       );
+    }
+
+    // Aplicar todos los filtros de audio si hay alguno
+    if (audioFilters.length > 0) {
+      ffmpegCommand.addOption("-af", audioFilters.join(","));
     }
 
     ffmpegCommand
