@@ -112,6 +112,13 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
     // Configurar la conversión y el filtro de reducción de ruido
     let ffmpegCommand = ffmpeg(webmFinalPath);
 
+    // Añadir opciones para forzar el audio a mono y una tasa de muestreo común (48kHz)
+    // Esto ayuda a evitar el error "Error reinitializing filters! Invalid argument"
+    // ya que arnndn a menudo espera entradas con estas propiedades.
+    ffmpegCommand
+      .audioChannels(1) // Forzar a mono
+      .audioFrequency(48000); // Forzar a 48kHz (o 16000 para modelos entrenados en 16kHz)
+
     // Si el modelo RNNoise existe, aplicar el filtro de reducción de ruido
     if (fs.existsSync(RNNOISE_MODEL_PATH)) {
       ffmpegCommand.addOption("-af", `arnndn=m=${RNNOISE_MODEL_PATH}`);
