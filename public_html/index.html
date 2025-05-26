@@ -344,8 +344,12 @@
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
-
-              guardarEnHistorial(result.nombre, result.googleDriveUrl);
+              guardarEnHistorial(
+                result.nombre,
+                result.googleDriveUrl,
+                result.playbackUrl
+              );
+              //guardarEnHistorial(result.nombre, result.googleDriveUrl);
             } catch (err) {
               console.error("❌ Error al subir:", err);
               status.textContent = "❌ Error al subir la grabación.";
@@ -418,7 +422,7 @@
 							
               <audio controls src="${item.playbackUrl}" class="h-8" aria-label="Reproducir grabación ${item.nombre}"></audio>
               <a href="${item.url}" target="_blank" class="text-blue-600 underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
-              <a href="${item.url}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
+              <a href="${item.googleDriveUrl}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
             </div>
           `;
           lista.appendChild(li);

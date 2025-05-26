@@ -62,7 +62,8 @@ if (!fs.existsSync(RECORDINGS_DIR)) {
   console.log(`📁 Carpeta de grabaciones creada en: ${RECORDINGS_DIR}`);
 }
 const upload = multer({ dest: "uploads/" });
-app.use(express.static("public_html"));
+app.use("/grabaciones", express.static(RECORDINGS_DIR));
+//app.use(express.static("public_html"));
 
 // 🔍 Endpoint para listar archivos subidos por la cuenta de servicio
 
@@ -109,7 +110,7 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
               type: "anyone",
             },
           });
-          //const publicUrl = `https://drive.google.com/uc?id=${fileId}&export=download`;
+          const publicUrl = `https://drive.google.com/uc?id=${fileId}&export=download`;
           const playbackUrl = `https://eldrincook-voice-api.onrender.com/grabaciones/${baseFilename}.mp3`;
 
           res.json({
