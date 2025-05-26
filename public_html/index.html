@@ -374,8 +374,19 @@
           startBtn.focus();
         }
       };
-
-      function guardarEnHistorial(nombre, url) {
+      function guardarEnHistorial(nombre, googleDriveUrl, playbackUrl) {
+        const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
+        const nueva = {
+          nombre: nombre,
+          googleDriveUrl: googleDriveUrl, // URL para descarga
+          playbackUrl: playbackUrl, // URL para reproducción
+          fecha: new Date().toLocaleString("es-ES"),
+        };
+        historial.unshift(nueva);
+        localStorage.setItem("grabaciones", JSON.stringify(historial));
+        mostrarHistorial();
+      }
+      /*function guardarEnHistorial(nombre, url) {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const nueva = {
           nombre,
@@ -385,7 +396,7 @@
         historial.unshift(nueva);
         localStorage.setItem("grabaciones", JSON.stringify(historial));
         mostrarHistorial();
-      }
+      }*/
       function mostrarHistorial() {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const lista = document.getElementById("historial");
@@ -404,7 +415,8 @@
               📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
             </div>
             <div class="flex items-center gap-2 mt-2 sm:mt-0">
-              <audio controls src="${item.url}" class="h-8"></audio>
+							
+              <audio controls src="${item.playbackUrl}" class="h-8" aria-label="Reproducir grabación ${item.nombre}"></audio>
               <a href="${item.url}" target="_blank" class="text-blue-600 underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
               <a href="${item.url}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
             </div>

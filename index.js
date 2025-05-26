@@ -109,7 +109,8 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
               type: "anyone",
             },
           });
-          const publicUrl = `https://drive.google.com/uc?id=${fileId}&export=download`;
+          //const publicUrl = `https://drive.google.com/uc?id=${fileId}&export=download`;
+          const playbackUrl = `https://eldrincook-voice-api.onrender.com/grabaciones/${baseFilename}.mp3`;
 
           res.json({
             message: "✅ Grabación subida y convertida con éxito.",
