@@ -6,154 +6,489 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      /* Estilos generales y de tipografía */
       body {
         font-family: "Inter", sans-serif;
         background-color: #f0f2f5;
         color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
         min-height: 100vh;
         box-sizing: border-box;
       }
-      button:focus,
-      input:focus {
-        outline: 2px solid #2563eb; /* Tailwind blue-600 */
+
+      h1,
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      /* Estilos de botones */
+      button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        margin: 5px;
+        /* Estilos de enfoque para accesibilidad */
+        outline: 2px solid transparent;
         outline-offset: 2px;
       }
-      /* Custom scrollbar for historial */
+
+      button:focus {
+        outline-color: #007bff;
+      }
+
+      button:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      #start {
+        background-color: #28a745;
+        color: white;
+      }
+      #start:hover:not(:disabled) {
+        background-color: #218838;
+      }
+
+      #stop {
+        background-color: #dc3545;
+        color: white;
+      }
+      #stop:hover:not(:disabled) {
+        background-color: #c82333;
+      }
+
+      /* Estilos de estado (loading, success, error, recording) */
+      #status {
+        padding: 10px;
+        margin-top: 10px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+      }
+      #status.loading {
+        color: #ffaa00;
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+      }
+      #status.success {
+        color: #28a745;
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        animation: pulse 0.6s ease;
+      }
+      #status.error {
+        color: #dc3545;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+      }
+      #status.recording {
+        color: #007bff;
+        background-color: #e0f7fa;
+        border: 1px solid #b3e5fc;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02); /* Ajustado para un efecto más sutil */
+        }
+      }
+
+      /* Estilos de historial */
       #historial {
-        scrollbar-width: thin;
-        scrollbar-color: #2563eb #f0f2f5;
+        list-style: none;
+        padding: 0;
+        width: 100%;
+        max-width: 600px;
+        margin-top: 20px;
       }
-      #historial::-webkit-scrollbar {
-        height: 8px;
-        width: 8px;
+
+      #historial li {
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       }
-      #historial::-webkit-scrollbar-thumb {
-        background: #2563eb;
-        border-radius: 10px;
+
+      #historial li strong {
+        color: #34495e;
       }
+
+      #historial li a {
+        color: #007bff;
+        text-decoration: none;
+        margin-right: 10px;
+      }
+
+      #historial li a:hover {
+        text-decoration: underline;
+      }
+
+      button.borrar {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 20px;
+        align-self: center; /* Centrar el botón de borrar historial */
+      }
+
+      button.borrar:hover {
+        background: #c82333;
+      }
+
+      /* Estilos del modal */
       .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
+        display: none; /* Oculto por defecto */
+        position: fixed; /* Posición fija en la pantalla */
+        z-index: 1000; /* Por encima de todo */
         left: 0;
         top: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.4);
+        width: 100%;
+        height: 100%;
+        overflow: auto; /* Habilitar scroll si es necesario */
+        background-color: rgba(0, 0, 0, 0.4); /* Fondo semi-transparente */
         justify-content: center;
         align-items: center;
       }
+
       .modal-content {
-        background: #fff;
-        border-radius: 1rem;
-        padding: 2rem 1rem;
-        max-width: 95vw;
-        width: 100%;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 500px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
       }
-      @media (max-width: 640px) {
-        .modal-content {
-          padding: 1rem 0.5rem;
+
+      .modal-content h3 {
+        margin-top: 0;
+        color: #333;
+      }
+
+      .modal-buttons button {
+        margin: 10px;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .modal-buttons .confirm-btn {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .modal-buttons .cancel-btn {
+        background-color: #6c757d;
+        color: white;
+      }
+
+      /* Estilos para el reproductor de audio en historial */
+      #historial li audio {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      /* Contenedor principal para centrar el contenido */
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+        max-width: 700px;
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 10px;
+      }
+
+      .input-group label {
+        font-weight: bold;
+        color: #555;
+      }
+
+      .input-group input[type="text"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 300px;
+        font-size: 1rem;
+        text-align: center;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      #audio-player-container {
+        width: 100%;
+        max-width: 400px;
+        margin-top: 15px;
+      }
+      #audio {
+        width: 100%;
+      }
+
+      hr {
+        width: 80%;
+        border: 0;
+        height: 1px;
+        background-image: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 0.2),
+          rgba(0, 0, 0, 0)
+        );
+        margin: 30px 0;
+      }
+
+      /* Indicador de grabación */
+      #recording-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
+        font-size: 1.1rem;
+        color: #007bff;
+        font-weight: bold;
+      }
+
+      #recording-dot {
+        width: 12px;
+        height: 12px;
+        background-color: red;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: blink 1s infinite alternate;
+      }
+
+      @keyframes blink {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.3;
         }
       }
-      @media (max-width: 500px) {
-        h1,
-        h2 {
-          font-size: 1.2rem !important;
+
+      /* Estilos para el visualizador de onda y medidor de volumen */
+      #waveformCanvas,
+      #volumeMeterCanvas {
+        background-color: #e0e0e0;
+        border-radius: 8px;
+        margin-top: 15px;
+        width: 100%;
+        max-width: 500px;
+      }
+
+      /* Estilos para botones de características adicionales */
+      #shareBtn,
+      #trimBtn,
+      #noiseReductionBtn {
+        background-color: #007bff;
+        color: white;
+      }
+      #shareBtn:hover:not(:disabled),
+      #trimBtn:hover:not(:disabled),
+      #noiseReductionBtn:hover:not(:disabled) {
+        background-color: #0056b3;
+      }
+
+      /* Clases de accesibilidad */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
+      /* Media Queries para responsividad */
+      @media (max-width: 600px) {
+        .container {
+          padding: 20px;
+          margin: 10px;
+        }
+        .controls {
+          flex-direction: column;
+        }
+        button {
+          width: 100%;
+        }
+        #status {
+          font-size: 0.9rem;
         }
       }
     </style>
   </head>
   <body>
-    <main class="flex flex-col items-center w-full min-h-screen px-2 sm:px-0">
-      <section
-        class="w-full sm:w-[95%] md:w-[75%] max-w-xl mt-6 bg-white rounded-2xl shadow-lg p-4 sm:p-8 flex flex-col items-center"
+    <main class="container" role="main" aria-label="Grabadora principal">
+      <h1 class="text-3xl font-extrabold">🎙️ Graba tu voz para el podcast</h1>
+      <form
+        id="grabacionForm"
+        class="input-group"
+        autocomplete="off"
+        onsubmit="return false;"
       >
-        <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 text-center">
-          🎙️ Graba tu voz para el podcast
-        </h1>
-        <form
-          id="grabacionForm"
-          class="w-full flex flex-col gap-2"
+        <label for="nombre" id="nombreLabel">📛 Nombre de la grabación:</label>
+        <input
+          type="text"
+          id="nombre"
+          aria-labelledby="nombreLabel"
+          placeholder="ej: capitulo-intro"
+          class="shadow-sm focus:ring-blue-500 focus:border-blue-500 rounded-lg"
           autocomplete="off"
-          onsubmit="return false;"
-        >
-          <label for="nombre" class="font-semibold text-gray-700"
-            >📛 Nombre de la grabación:</label
-          >
-          <input
-            type="text"
-            id="nombre"
-            placeholder="ej: capitulo-intro"
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            autocomplete="off"
-          />
-        </form>
-        <p
-          id="status"
-          class="w-full rounded-lg px-3 py-2 mt-3 font-semibold text-center bg-yellow-50 text-yellow-800 border border-yellow-400 transition"
-          role="status"
-          aria-live="polite"
-        >
-          🔄 Cargando servidor...
-        </p>
-        <div
-          id="recording-indicator"
-          class="flex items-center justify-center mt-2"
-          style="display: none"
-        >
-          <span
-            id="recording-dot"
-            class="w-3 h-3 bg-red-600 rounded-full animate-pulse mr-2"
-          ></span>
-          <span id="recording-timer" class="font-mono"></span>
-        </div>
-        <div class="flex flex-col xs:flex-row gap-2 mt-4 w-full">
-          <button
-            id="start"
-            type="button"
-            class="flex-1 bg-green-600 hover:bg-green-700 transition text-white font-bold py-2 rounded-lg shadow disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled
-            aria-label="Comenzar Grabación"
-          >
-            Comenzar Grabación
-          </button>
-          <button
-            id="stop"
-            type="button"
-            class="flex-1 bg-red-600 hover:bg-red-700 transition text-white font-bold py-2 rounded-lg shadow disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled
-            aria-label="Detener Grabación"
-          >
-            Detener
-          </button>
-        </div>
-        <div id="audio-player-container" class="w-full mt-4">
-          <audio id="audio" controls class="w-full rounded-lg"></audio>
-        </div>
-      </section>
-      <audio
-        id="success-sound"
-        src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3cf9ccf3ca.mp3"
-        preload="auto"
-        aria-hidden="true"
-      ></audio>
-      <section
-        class="w-full sm:w-[95%] md:w-[75%] max-w-xl mt-8 bg-white rounded-2xl shadow-lg p-4 sm:p-8 flex flex-col items-center"
+        />
+      </form>
+
+      <p id="status" class="loading" role="status" aria-live="polite">
+        🔄 Cargando servidor...
+      </p>
+
+      <div
+        id="recording-indicator"
+        class="flex items-center justify-center mt-2"
+        style="display: none"
       >
-        <h2 class="text-xl sm:text-2xl font-bold mb-3 text-center">
-          🕘 Historial de Grabaciones
-        </h2>
-        <ul id="historial" class="w-full max-h-60 overflow-y-auto mb-3"></ul>
+        <span id="recording-dot" aria-hidden="true"></span>
+        <span id="recording-timer">00:00</span>
+      </div>
+
+      <canvas
+        id="waveformCanvas"
+        width="500"
+        height="100"
+        style="display: none"
+        aria-label="Visualizador de onda de audio"
+      ></canvas>
+      <canvas
+        id="volumeMeterCanvas"
+        width="500"
+        height="30"
+        style="display: none"
+        aria-label="Medidor de volumen de entrada"
+      ></canvas>
+
+      <div class="controls" role="group" aria-label="Controles de grabación">
         <button
-          class="borrar bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold mt-2 transition shadow"
+          id="start"
           type="button"
-          onclick="showConfirmModal('¿Estás seguro de que quieres borrar todo el historial?', borrarHistorialConfirm)"
+          disabled
+          aria-label="Comenzar Grabación"
         >
-          🗑️ Borrar historial
+          Comenzar Grabación
         </button>
-      </section>
+        <button id="stop" type="button" disabled aria-label="Detener Grabación">
+          Detener
+        </button>
+      </div>
+
+      <div id="audio-player-container">
+        <audio
+          id="audio"
+          controls
+          class="w-full rounded-lg"
+          aria-label="Reproductor de la última grabación"
+        ></audio>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-2 mt-4 w-full max-w-md">
+        <button
+          id="shareBtn"
+          type="button"
+          class="flex-1 min-w-[150px]"
+          style="display: none"
+          aria-label="Compartir Grabación"
+        >
+          🔗 Compartir
+        </button>
+        <button
+          id="trimBtn"
+          type="button"
+          class="flex-1 min-w-[150px]"
+          style="display: none"
+          aria-label="Recortar Grabación (Funcionalidad no implementada)"
+        >
+          ✂️ Recortar (Placeholder)
+        </button>
+        <button
+          id="noiseReductionBtn"
+          type="button"
+          class="flex-1 min-w-[150px]"
+          style="display: none"
+          aria-label="Reducir Ruido (Funcionalidad no implementada)"
+        >
+          🔇 Reducir Ruido (Placeholder)
+        </button>
+      </div>
     </main>
+
+    <audio
+      id="success-sound"
+      src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3cf9ccf3ca.mp3"
+      preload="auto"
+      aria-hidden="true"
+    ></audio>
+
+    <hr />
+
+    <section class="container mt-8" aria-labelledby="historialTitle">
+      <h2 id="historialTitle" class="text-2xl font-bold">
+        🕘 Historial de Grabaciones
+      </h2>
+      <ul id="historial"></ul>
+      <button
+        class="borrar"
+        type="button"
+        onclick="showConfirmModal('¿Estás seguro de que quieres borrar todo el historial?', borrarHistorialConfirm)"
+        aria-label="Borrar historial de grabaciones"
+      >
+        🗑️ Borrar historial
+      </button>
+    </section>
+
     <div
       id="customModal"
       class="modal"
@@ -162,19 +497,15 @@
       aria-labelledby="modalTitle"
     >
       <div class="modal-content">
-        <h3 id="modalTitle" class="text-xl font-bold mb-2"></h3>
-        <p id="modalMessage" class="mb-4"></p>
-        <div class="modal-buttons flex justify-center gap-4">
-          <button
-            id="modalConfirmBtn"
-            class="confirm-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 transition"
-            type="button"
-          >
+        <h3 id="modalTitle"></h3>
+        <p id="modalMessage"></p>
+        <div class="modal-buttons">
+          <button id="modalConfirmBtn" class="confirm-btn" type="button">
             Aceptar
           </button>
           <button
             id="modalCancelBtn"
-            class="cancel-btn bg-gray-400 hover:bg-gray-600 text-white font-semibold rounded-lg px-4 py-2 transition"
+            class="cancel-btn"
             type="button"
             style="display: none"
           >
@@ -183,11 +514,22 @@
         </div>
       </div>
     </div>
+
     <script>
       let mediaRecorder;
       let audioChunks = [];
       let recordingTimerInterval;
       let recordingStartTime;
+
+      // Web Audio API para visualización
+      let audioContext;
+      let analyser;
+      let microphoneSource;
+      let waveformCanvas;
+      let waveformCanvasCtx;
+      let volumeMeterCanvas;
+      let volumeMeterCanvasCtx;
+      let animationFrameId;
 
       const status = document.getElementById("status");
       const startBtn = document.getElementById("start");
@@ -196,15 +538,19 @@
       const successSound = document.getElementById("success-sound");
       const recordingIndicator = document.getElementById("recording-indicator");
       const recordingTimer = document.getElementById("recording-timer");
+      const shareBtn = document.getElementById("shareBtn");
+      const trimBtn = document.getElementById("trimBtn");
+      const noiseReductionBtn = document.getElementById("noiseReductionBtn");
+      const audioPlayer = document.getElementById("audio");
 
-      // Modal references
+      // Referencias del modal
       const customModal = document.getElementById("customModal");
       const modalTitle = document.getElementById("modalTitle");
       const modalMessage = document.getElementById("modalMessage");
       const modalConfirmBtn = document.getElementById("modalConfirmBtn");
       const modalCancelBtn = document.getElementById("modalCancelBtn");
 
-      // Modal helpers
+      // Función para mostrar el modal
       function showModal(
         title,
         message,
@@ -214,35 +560,141 @@
       ) {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
-        customModal.style.display = "flex";
+        customModal.style.display = "flex"; // Mostrar el modal
+
         modalCancelBtn.style.display = isConfirm ? "inline-block" : "none";
+
+        // Limpiar listeners anteriores
+        modalConfirmBtn.onclick = null;
+        modalCancelBtn.onclick = null;
+
         modalConfirmBtn.onclick = () => {
           customModal.style.display = "none";
           if (onConfirm) onConfirm();
         };
-        modalCancelBtn.onclick = isConfirm
-          ? () => {
-              customModal.style.display = "none";
-              if (onCancel) onCancel();
-            }
-          : null;
+
+        if (isConfirm) {
+          modalCancelBtn.onclick = () => {
+            customModal.style.display = "none";
+            if (onCancel) onCancel();
+          };
+        }
       }
+
+      // Funciones específicas para alerta y confirmación
       function showAlert(message) {
         showModal("Atención", message);
       }
+
       function showConfirmModal(message, onConfirm, onCancel = null) {
         showModal("Confirmación", message, true, onConfirm, onCancel);
       }
 
-      // Timer
+      // Función para actualizar el temporizador de grabación
       function updateRecordingTimer() {
         const elapsedTime = Date.now() - recordingStartTime;
         const seconds = Math.floor((elapsedTime / 1000) % 60);
         const minutes = Math.floor(elapsedTime / 1000 / 60);
-        recordingTimer.textContent = `${String(minutes).padStart(
-          2,
-          "0"
-        )}:${String(seconds).padStart(2, "0")}`;
+
+        const formattedTime = `${String(minutes).padStart(2, "0")}:${String(
+          seconds
+        ).padStart(2, "0")}`;
+        recordingTimer.textContent = formattedTime;
+      }
+
+      // Función para dibujar el visualizador de onda y el medidor de volumen
+      function drawVisualizations() {
+        if (!analyser) return;
+
+        // Visualizador de Onda
+        analyser.fftSize = 2048; // Tamaño del buffer para el análisis de frecuencia
+        const bufferLength = analyser.fftSize;
+        const dataArray = new Uint8Array(bufferLength); // Array para almacenar los datos de la onda
+
+        waveformCanvasCtx.clearRect(
+          0,
+          0,
+          waveformCanvas.width,
+          waveformCanvas.height
+        );
+        analyser.getByteTimeDomainData(dataArray); // Obtener datos de la onda de tiempo
+
+        waveformCanvasCtx.lineWidth = 2;
+        waveformCanvasCtx.strokeStyle = "rgb(0, 123, 255)"; // Color de la onda
+        waveformCanvasCtx.beginPath();
+
+        const sliceWidth = (waveformCanvas.width * 1.0) / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0; // Normalizar a 0-2
+          const y = (v * waveformCanvas.height) / 2;
+
+          if (i === 0) {
+            waveformCanvasCtx.moveTo(x, y);
+          } else {
+            waveformCanvasCtx.lineTo(x, y);
+          }
+          x += sliceWidth;
+        }
+
+        waveformCanvasCtx.lineTo(
+          waveformCanvas.width,
+          waveformCanvas.height / 2
+        );
+        waveformCanvasCtx.stroke();
+
+        // Medidor de Volumen
+        analyser.fftSize = 32; // Un tamaño de buffer más pequeño para el volumen
+        const volumeBufferLength = analyser.fftSize;
+        const volumeDataArray = new Uint8Array(volumeBufferLength);
+        analyser.getByteFrequencyData(volumeDataArray); // Obtener datos de frecuencia
+
+        let sum = 0;
+        for (let i = 0; i < volumeBufferLength; i++) {
+          sum += volumeDataArray[i];
+        }
+        let average = sum / volumeBufferLength; // Promedio de amplitud (volumen)
+
+        volumeMeterCanvasCtx.clearRect(
+          0,
+          0,
+          volumeMeterCanvas.width,
+          volumeMeterCanvas.height
+        );
+        const meterWidth = (average / 255) * volumeMeterCanvas.width; // Escalar el volumen a la anchura del canvas
+
+        volumeMeterCanvasCtx.fillStyle = "rgb(40, 167, 69)"; // Color del medidor
+        volumeMeterCanvasCtx.fillRect(
+          0,
+          0,
+          meterWidth,
+          volumeMeterCanvas.height
+        );
+
+        animationFrameId = requestAnimationFrame(drawVisualizations);
+      }
+
+      // Función para detener las visualizaciones
+      function stopVisualizations() {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        if (microphoneSource) {
+          microphoneSource.disconnect();
+          microphoneSource = null;
+        }
+        if (analyser) {
+          analyser.disconnect();
+          analyser = null;
+        }
+        if (audioContext && audioContext.state !== "closed") {
+          audioContext.close();
+          audioContext = null;
+        }
+        waveformCanvas.style.display = "none";
+        volumeMeterCanvas.style.display = "none";
       }
 
       async function pingBackend() {
@@ -251,6 +703,7 @@
           status.textContent = "✅ Servidor activo. Puedes grabar tu voz.";
           status.className = "bg-green-50 text-green-800 border-green-400";
           startBtn.disabled = false;
+          startBtn.focus(); // Establecer el foco en el botón de inicio
         } catch (err) {
           status.textContent = "⚠️ El servidor está tardando en responder...";
           status.className = "bg-red-50 text-red-800 border-red-400";
@@ -261,21 +714,44 @@
       }
 
       window.addEventListener("DOMContentLoaded", () => {
+        waveformCanvas = document.getElementById("waveformCanvas");
+        waveformCanvasCtx = waveformCanvas.getContext("2d");
+        volumeMeterCanvas = document.getElementById("volumeMeterCanvas");
+        volumeMeterCanvasCtx = volumeMeterCanvas.getContext("2d");
+
         pingBackend();
         mostrarHistorial();
       });
 
+      // Mejor experiencia para Enter en el input
       inputNombre.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
+          e.preventDefault(); // Prevenir el envío del formulario
           startBtn.click();
         }
       });
 
       startBtn.onclick = async () => {
         try {
+          // Permiso de micrófono
           const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
           });
+
+          // Inicializar Web Audio API para visualización
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          microphoneSource = audioContext.createMediaStreamSource(stream);
+          microphoneSource.connect(analyser);
+          // Opcional: conectar el analizador a la salida de audio para que se escuche
+          // analyser.connect(audioContext.destination);
+
+          // Iniciar la visualización
+          waveformCanvas.style.display = "block";
+          volumeMeterCanvas.style.display = "block";
+          drawVisualizations();
+
           mediaRecorder = new MediaRecorder(stream);
           mediaRecorder.start();
 
@@ -283,6 +759,7 @@
           mediaRecorder.ondataavailable = (event) =>
             audioChunks.push(event.data);
 
+          // Temporizador & estados
           recordingStartTime = Date.now();
           recordingTimer.textContent = "00:00";
           recordingIndicator.style.display = "flex";
@@ -292,15 +769,24 @@
           status.className = "bg-blue-50 text-blue-800 border-blue-400";
           startBtn.disabled = true;
           stopBtn.disabled = false;
-          stopBtn.focus();
+          stopBtn.focus(); // Establecer el foco en el botón de detener
+
+          // Ocultar botones de características adicionales durante la grabación
+          shareBtn.style.display = "none";
+          // trimBtn.style.display = 'none'; // Ya están ocultos por defecto en HTML
+          // noiseReductionBtn.style.display = 'none'; // Ya están ocultos por defecto en HTML
 
           mediaRecorder.onstop = async () => {
+            // Detener temporizador e indicador
             clearInterval(recordingTimerInterval);
             recordingIndicator.style.display = "none";
+            stopVisualizations(); // Detener las visualizaciones
 
             const blob = new Blob(audioChunks, { type: "audio/webm" });
-            document.getElementById("audio").src = URL.createObjectURL(blob);
+            const audioURL = URL.createObjectURL(blob);
+            audioPlayer.src = audioURL;
 
+            // Limpia y sanitiza el nombre
             let nombreLimpio = inputNombre.value
               .trim()
               .replace(/\s+/g, "_")
@@ -322,34 +808,54 @@
                   credentials: "include",
                 }
               );
+
               if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(
                   `Error del servidor: ${response.status} - ${errorText}`
                 );
               }
+
               const result = await response.json();
+              console.log("✅ Subido:", result);
+
               status.innerHTML = `
                 ✅ Grabación enviada como: <strong>${result.nombre}</strong><br>
                 <a href="${result.googleDriveUrl}" target="_blank" class="text-blue-600 underline">⬇️ Descargar MP3</a>
               `;
               status.className = "bg-green-50 text-green-800 border-green-400";
+
+              // 🔊 Sonido de éxito
               successSound.play();
 
-              // Descarga automática accesible
+              // 💾 Descargar automáticamente
               const a = document.createElement("a");
               a.href = result.googleDriveUrl;
               a.download = result.nombre || "grabacion.mp3";
-              a.style.display = "none";
+              a.style.display = "none"; // Ocultar el enlace de descarga automática
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
+
+              // Mostrar botón de compartir (siempre visible si el navegador lo soporta)
+              if (navigator.share) {
+                shareBtn.style.display = "inline-block";
+                shareBtn.onclick = () =>
+                  shareRecording(result.nombre, result.googleDriveUrl);
+              } else {
+                shareBtn.style.display = "inline-block";
+                shareBtn.textContent = "📋 Copiar Enlace";
+                shareBtn.onclick = () =>
+                  copyLinkToClipboard(result.googleDriveUrl);
+              }
+              // Los botones de recorte y reducción de ruido NO se muestran aquí.
+
+              // 📝 Guardar en historial, ahora pasando la playbackUrl
               guardarEnHistorial(
                 result.nombre,
                 result.googleDriveUrl,
                 result.playbackUrl
               );
-              //guardarEnHistorial(result.nombre, result.googleDriveUrl);
             } catch (err) {
               console.error("❌ Error al subir:", err);
               status.textContent = "❌ Error al subir la grabación.";
@@ -357,6 +863,7 @@
               showAlert("Hubo un error al subir tu grabación: " + err.message);
             } finally {
               startBtn.disabled = false;
+              startBtn.focus(); // Devolver el foco al botón de inicio
             }
           };
         } catch (err) {
@@ -367,17 +874,60 @@
             "No se pudo acceder al micrófono. Por favor, asegúrate de que los permisos estén concedidos."
           );
           startBtn.disabled = false;
+          startBtn.focus(); // Asegurarse de que el botón de inicio se habilite y reciba foco si falla el acceso al micro
+          stopVisualizations(); // Asegurarse de que las visualizaciones se detengan si falla el micro
         }
       };
 
       stopBtn.onclick = () => {
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
           mediaRecorder.stop();
+          // La lógica de onstop se encargará de detener el temporizador y las visualizaciones
           stopBtn.disabled = true;
           startBtn.disabled = false;
-          startBtn.focus();
+          startBtn.focus(); // Devolver el foco al botón de inicio
         }
       };
+
+      // Función para compartir la grabación
+      async function shareRecording(name, url) {
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: `Grabación de Voz: ${name}`,
+              text: `Escucha mi grabación de voz: ${name}`,
+              url: url,
+            });
+            showAlert("Grabación compartida con éxito!");
+          } catch (error) {
+            console.error("Error al compartir:", error);
+            showAlert("No se pudo compartir la grabación.");
+          }
+        } else {
+          // Fallback para navegadores que no soportan Web Share API
+          copyLinkToClipboard(url);
+        }
+      }
+
+      // Función para copiar el enlace al portapapeles (fallback para compartir)
+      function copyLinkToClipboard(url) {
+        const tempInput = document.createElement("textarea");
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+          document.execCommand("copy");
+          showAlert("Enlace copiado al portapapeles!");
+        } catch (err) {
+          console.error("Error al copiar el enlace:", err);
+          showAlert("No se pudo copiar el enlace al portapapeles.");
+        } finally {
+          document.body.removeChild(tempInput);
+        }
+      }
+
+      // Historial accesible
+      // Ahora acepta una playbackUrl adicional
       function guardarEnHistorial(nombre, googleDriveUrl, playbackUrl) {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const nueva = {
@@ -390,44 +940,36 @@
         localStorage.setItem("grabaciones", JSON.stringify(historial));
         mostrarHistorial();
       }
-      /*function guardarEnHistorial(nombre, url) {
-        const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
-        const nueva = {
-          nombre,
-          url,
-          fecha: new Date().toLocaleString("es-ES"),
-        };
-        historial.unshift(nueva);
-        localStorage.setItem("grabaciones", JSON.stringify(historial));
-        mostrarHistorial();
-      }*/
+
       function mostrarHistorial() {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const lista = document.getElementById("historial");
         lista.innerHTML = "";
+
         if (historial.length === 0) {
           lista.innerHTML =
             '<li class="text-gray-500">Aún no has grabado nada.</li>';
           return;
         }
+
         historial.forEach((item) => {
           const li = document.createElement("li");
           li.className =
             "flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-gray-50 rounded-lg mb-2 border";
           li.innerHTML = `
             <div class="flex-grow truncate">
-              📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
+                📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
             </div>
             <div class="flex items-center gap-2 mt-2 sm:mt-0">
-							
-              <audio controls src="${item.playbackUrl}" class="h-8" aria-label="Reproducir grabación ${item.nombre}"></audio>
-              <a href="${item.url}" target="_blank" class="text-blue-600 underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
-              <a href="${item.googleDriveUrl}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
+                <audio controls src="${item.playbackUrl}" class="h-8" aria-label="Reproducir grabación ${item.nombre}"></audio>
+                <a href="${item.googleDriveUrl}" target="_blank" class="text-blue-600 underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
+                <a href="${item.googleDriveUrl}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
             </div>
           `;
           lista.appendChild(li);
         });
       }
+
       function borrarHistorialConfirm() {
         localStorage.removeItem("grabaciones");
         mostrarHistorial();
