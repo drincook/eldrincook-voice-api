@@ -6,103 +6,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Todo tu CSS original se mantiene igual, solo podrías agregar:
-      - outline: 2px solid #007bff; para los inputs y botones :focus
-      - .sr-only para accesibilidad */
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+        min-height: 100vh;
+        box-sizing: border-box;
       }
-      input:focus,
-      button:focus {
-        outline: 2px solid #007bff;
+      button:focus,
+      input:focus {
+        outline: 2px solid #2563eb; /* Tailwind blue-600 */
         outline-offset: 2px;
+      }
+      /* Custom scrollbar for historial */
+      #historial {
+        scrollbar-width: thin;
+        scrollbar-color: #2563eb #f0f2f5;
+      }
+      #historial::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      #historial::-webkit-scrollbar-thumb {
+        background: #2563eb;
+        border-radius: 10px;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 2rem 1rem;
+        max-width: 95vw;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      }
+      @media (max-width: 640px) {
+        .modal-content {
+          padding: 1rem 0.5rem;
+        }
+      }
+      @media (max-width: 500px) {
+        h1,
+        h2 {
+          font-size: 1.2rem !important;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="container" role="main" aria-label="Grabadora principal">
-      <h1 class="text-3xl font-extrabold">🎙️ Graba tu voz para el podcast</h1>
-      <form
-        id="grabacionForm"
-        class="input-group"
-        autocomplete="off"
-        onsubmit="return false;"
+    <main class="flex flex-col items-center w-full min-h-screen px-2 sm:px-0">
+      <section
+        class="w-full sm:w-[95%] md:w-[75%] max-w-xl mt-6 bg-white rounded-2xl shadow-lg p-4 sm:p-8 flex flex-col items-center"
       >
-        <label for="nombre" id="nombreLabel">📛 Nombre de la grabación:</label>
-        <input
-          type="text"
-          id="nombre"
-          aria-labelledby="nombreLabel"
-          placeholder="ej: capitulo-intro"
-          class="shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        <h1 class="text-2xl sm:text-3xl font-extrabold mb-4 text-center">
+          🎙️ Graba tu voz para el podcast
+        </h1>
+        <form
+          id="grabacionForm"
+          class="w-full flex flex-col gap-2"
           autocomplete="off"
-        />
-      </form>
-
-      <p id="status" class="loading" role="status" aria-live="polite">
-        🔄 Cargando servidor...
-      </p>
-
-      <div id="recording-indicator" style="display: none">
-        <span id="recording-dot" aria-hidden="true"></span>
-        <span id="recording-timer">00:00</span>
-      </div>
-
-      <div class="controls" role="group" aria-label="Controles de grabación">
-        <button
-          id="start"
-          type="button"
-          disabled
-          aria-label="Comenzar Grabación"
+          onsubmit="return false;"
         >
-          Comenzar Grabación
-        </button>
-        <button id="stop" type="button" disabled aria-label="Detener Grabación">
-          Detener
-        </button>
-      </div>
-
-      <div id="audio-player-container">
-        <audio
-          id="audio"
-          controls
-          class="w-full rounded-lg"
-          aria-label="Reproductor de la última grabación"
-        ></audio>
-      </div>
-    </main>
-
-    <audio
-      id="success-sound"
-      src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3cf9ccf3ca.mp3"
-      preload="auto"
-      aria-hidden="true"
-    ></audio>
-
-    <hr />
-
-    <section class="container mt-8" aria-labelledby="historialTitle">
-      <h2 id="historialTitle" class="text-2xl font-bold">
-        🕘 Historial de Grabaciones
-      </h2>
-      <ul id="historial"></ul>
-      <button
-        class="borrar"
-        type="button"
-        onclick="showConfirmModal('¿Estás seguro de que quieres borrar todo el historial?', borrarHistorialConfirm)"
-        aria-label="Borrar historial de grabaciones"
+          <label for="nombre" class="font-semibold text-gray-700"
+            >📛 Nombre de la grabación:</label
+          >
+          <input
+            type="text"
+            id="nombre"
+            placeholder="ej: capitulo-intro"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            autocomplete="off"
+          />
+        </form>
+        <p
+          id="status"
+          class="w-full rounded-lg px-3 py-2 mt-3 font-semibold text-center bg-yellow-50 text-yellow-800 border border-yellow-400 transition"
+          role="status"
+          aria-live="polite"
+        >
+          🔄 Cargando servidor...
+        </p>
+        <div
+          id="recording-indicator"
+          class="flex items-center justify-center mt-2"
+          style="display: none"
+        >
+          <span
+            id="recording-dot"
+            class="w-3 h-3 bg-red-600 rounded-full animate-pulse mr-2"
+          ></span>
+          <span id="recording-timer" class="font-mono"></span>
+        </div>
+        <div class="flex flex-col xs:flex-row gap-2 mt-4 w-full">
+          <button
+            id="start"
+            type="button"
+            class="flex-1 bg-green-600 hover:bg-green-700 transition text-white font-bold py-2 rounded-lg shadow disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled
+            aria-label="Comenzar Grabación"
+          >
+            Comenzar Grabación
+          </button>
+          <button
+            id="stop"
+            type="button"
+            class="flex-1 bg-red-600 hover:bg-red-700 transition text-white font-bold py-2 rounded-lg shadow disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled
+            aria-label="Detener Grabación"
+          >
+            Detener
+          </button>
+        </div>
+        <div id="audio-player-container" class="w-full mt-4">
+          <audio id="audio" controls class="w-full rounded-lg"></audio>
+        </div>
+      </section>
+      <audio
+        id="success-sound"
+        src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3cf9ccf3ca.mp3"
+        preload="auto"
+        aria-hidden="true"
+      ></audio>
+      <section
+        class="w-full sm:w-[95%] md:w-[75%] max-w-xl mt-8 bg-white rounded-2xl shadow-lg p-4 sm:p-8 flex flex-col items-center"
       >
-        🗑️ Borrar historial
-      </button>
-    </section>
-
+        <h2 class="text-xl sm:text-2xl font-bold mb-3 text-center">
+          🕘 Historial de Grabaciones
+        </h2>
+        <ul id="historial" class="w-full max-h-60 overflow-y-auto mb-3"></ul>
+        <button
+          class="borrar bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold mt-2 transition shadow"
+          type="button"
+          onclick="showConfirmModal('¿Estás seguro de que quieres borrar todo el historial?', borrarHistorialConfirm)"
+        >
+          🗑️ Borrar historial
+        </button>
+      </section>
+    </main>
     <div
       id="customModal"
       class="modal"
@@ -111,15 +162,19 @@
       aria-labelledby="modalTitle"
     >
       <div class="modal-content">
-        <h3 id="modalTitle"></h3>
-        <p id="modalMessage"></p>
-        <div class="modal-buttons">
-          <button id="modalConfirmBtn" class="confirm-btn" type="button">
+        <h3 id="modalTitle" class="text-xl font-bold mb-2"></h3>
+        <p id="modalMessage" class="mb-4"></p>
+        <div class="modal-buttons flex justify-center gap-4">
+          <button
+            id="modalConfirmBtn"
+            class="confirm-btn bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 transition"
+            type="button"
+          >
             Aceptar
           </button>
           <button
             id="modalCancelBtn"
-            class="cancel-btn"
+            class="cancel-btn bg-gray-400 hover:bg-gray-600 text-white font-semibold rounded-lg px-4 py-2 transition"
             type="button"
             style="display: none"
           >
@@ -128,7 +183,6 @@
         </div>
       </div>
     </div>
-
     <script>
       let mediaRecorder;
       let audioChunks = [];
@@ -195,12 +249,11 @@
         try {
           await fetch("https://eldrincook-voice-api.onrender.com/files");
           status.textContent = "✅ Servidor activo. Puedes grabar tu voz.";
-          status.className = "success";
+          status.className = "bg-green-50 text-green-800 border-green-400";
           startBtn.disabled = false;
-          startBtn.focus();
         } catch (err) {
           status.textContent = "⚠️ El servidor está tardando en responder...";
-          status.className = "error";
+          status.className = "bg-red-50 text-red-800 border-red-400";
           showAlert(
             "El servidor está tardando en responder. Por favor, inténtalo de nuevo más tarde."
           );
@@ -212,7 +265,6 @@
         mostrarHistorial();
       });
 
-      // Mejor experiencia para Enter en el input
       inputNombre.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           startBtn.click();
@@ -221,7 +273,6 @@
 
       startBtn.onclick = async () => {
         try {
-          // Permiso de micrófono
           const stream = await navigator.mediaDevices.getUserMedia({
             audio: true,
           });
@@ -232,14 +283,13 @@
           mediaRecorder.ondataavailable = (event) =>
             audioChunks.push(event.data);
 
-          // Temporizador & estados
           recordingStartTime = Date.now();
           recordingTimer.textContent = "00:00";
           recordingIndicator.style.display = "flex";
           recordingTimerInterval = setInterval(updateRecordingTimer, 1000);
 
           status.textContent = "🔴 Grabando...";
-          status.className = "recording";
+          status.className = "bg-blue-50 text-blue-800 border-blue-400";
           startBtn.disabled = true;
           stopBtn.disabled = false;
           stopBtn.focus();
@@ -251,7 +301,6 @@
             const blob = new Blob(audioChunks, { type: "audio/webm" });
             document.getElementById("audio").src = URL.createObjectURL(blob);
 
-            // Limpia y sanitiza el nombre
             let nombreLimpio = inputNombre.value
               .trim()
               .replace(/\s+/g, "_")
@@ -262,7 +311,7 @@
             formData.append("nombrePersonalizado", nombreLimpio);
 
             status.textContent = "⬆️ Subiendo y convirtiendo...";
-            status.className = "loading";
+            status.className = "bg-yellow-50 text-yellow-800 border-yellow-400";
 
             try {
               const response = await fetch(
@@ -282,9 +331,9 @@
               const result = await response.json();
               status.innerHTML = `
                 ✅ Grabación enviada como: <strong>${result.nombre}</strong><br>
-                <a href="${result.googleDriveUrl}" target="_blank" class="text-blue-600 hover:underline">⬇️ Descargar MP3</a>
+                <a href="${result.googleDriveUrl}" target="_blank" class="text-blue-600 underline">⬇️ Descargar MP3</a>
               `;
-              status.className = "success";
+              status.className = "bg-green-50 text-green-800 border-green-400";
               successSound.play();
 
               // Descarga automática accesible
@@ -300,22 +349,20 @@
             } catch (err) {
               console.error("❌ Error al subir:", err);
               status.textContent = "❌ Error al subir la grabación.";
-              status.className = "error";
+              status.className = "bg-red-50 text-red-800 border-red-400";
               showAlert("Hubo un error al subir tu grabación: " + err.message);
             } finally {
               startBtn.disabled = false;
-              startBtn.focus();
             }
           };
         } catch (err) {
           console.error("❌ Error al acceder al micrófono:", err);
           status.textContent = "❌ Error: No se pudo acceder al micrófono.";
-          status.className = "error";
+          status.className = "bg-red-50 text-red-800 border-red-400";
           showAlert(
             "No se pudo acceder al micrófono. Por favor, asegúrate de que los permisos estén concedidos."
           );
           startBtn.disabled = false;
-          startBtn.focus();
         }
       };
 
@@ -328,7 +375,6 @@
         }
       };
 
-      // Historial accesible
       function guardarEnHistorial(nombre, url) {
         const historial = JSON.parse(localStorage.getItem("grabaciones")) || [];
         const nueva = {
@@ -352,21 +398,20 @@
         historial.forEach((item) => {
           const li = document.createElement("li");
           li.className =
-            "flex flex-col md:flex-row md:items-center justify-between gap-2";
+            "flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-gray-50 rounded-lg mb-2 border";
           li.innerHTML = `
-            <div class="flex-grow">
+            <div class="flex-grow truncate">
               📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
             </div>
-            <div class="flex items-center gap-2 mt-2 md:mt-0">
-              <audio controls src="${item.url}" class="w-full md:w-auto h-8"></audio>
-              <a href="${item.url}" target="_blank" class="text-blue-600 hover:underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
-              <a href="${item.url}" download="${item.nombre}" class="text-green-600 hover:underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
+            <div class="flex items-center gap-2 mt-2 sm:mt-0">
+              <audio controls src="${item.url}" class="h-8"></audio>
+              <a href="${item.url}" target="_blank" class="text-blue-600 underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
+              <a href="${item.url}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
             </div>
           `;
           lista.appendChild(li);
         });
       }
-
       function borrarHistorialConfirm() {
         localStorage.removeItem("grabaciones");
         mostrarHistorial();
