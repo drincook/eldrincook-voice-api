@@ -214,6 +214,7 @@
       #historial li audio {
         width: 100%;
         margin-top: 10px;
+        height: 2rem; /* Revertido a h-8 (2rem) */
       }
 
       /* Contenedor principal para centrar el contenido */
@@ -957,10 +958,10 @@
           li.className =
             "flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-gray-50 rounded-lg mb-2 border";
           li.innerHTML = `
-            <div class="flex-grow truncate">
+            <div class="flex-grow truncate min-w-0 w-full">
                 📁 <strong>${item.nombre}</strong> - <span class="text-sm text-gray-600">${item.fecha}</span>
             </div>
-            <div class="flex items-center gap-2 mt-2 sm:mt-0">
+            <div class="flex items-center gap-2 mt-2 sm:mt-0 flex-wrap">
                 <audio controls src="${item.playbackUrl}" class="h-8" aria-label="Reproducir grabación ${item.nombre}"></audio>
                 <a href="${item.googleDriveUrl}" target="_blank" class="text-blue-600 underline text-sm" aria-label="Ver grabación">🔗 Ver</a>
                 <a href="${item.googleDriveUrl}" download="${item.nombre}" class="text-green-600 underline text-sm" aria-label="Descargar grabación">⬇️ Descargar</a>
