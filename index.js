@@ -63,7 +63,7 @@ if (!fs.existsSync(RECORDINGS_DIR)) {
 }
 const upload = multer({ dest: "uploads/" });
 app.use("/grabaciones", express.static(RECORDINGS_DIR));
-//app.use(express.static("public_html"));
+app.use(express.static("public_html"));
 
 // 🔍 Endpoint para listar archivos subidos por la cuenta de servicio
 
