@@ -189,7 +189,8 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
           res.json({
             message: "✅ Grabación subida, convertida y procesada con éxito.",
             googleDriveUrl: publicUrl, // Para descarga
-            playbackUrl: playbackUrl, // Para reproducción directa
+            playbackUrl: googleDriveUrl, // Para reproducción directa
+            //playbackUrl: playbackUrl, // Para reproducción directa
             nombre: `${baseFilename}.mp3`,
             fileId: fileId,
           });
