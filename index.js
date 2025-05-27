@@ -101,8 +101,6 @@ const upload = multer({ dest: "uploads/" });
 // Sirve archivos estáticos desde public_html (para el frontend)
 app.use(express.static("public_html"));
 // Sirve las grabaciones directamente desde /grabaciones URL
-// Esta línea ya no es estrictamente necesaria para la reproducción desde el historial
-// si playbackUrl apunta a Google Drive, pero la mantenemos por si acaso se usa para otra cosa.
 app.use("/grabaciones", express.static(RECORDINGS_DIR));
 
 // Endpoint para subir y convertir audio
@@ -120,7 +118,7 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
   // Declarar estas variables con 'let' fuera del bloque try
   // para asegurar que siempre existan en el ámbito, incluso si hay un error
   let publicUrl;
-  let playbackUrl; // Ahora esta variable tomará el valor de publicUrl
+  let playbackUrl;
   let fileId;
 
   fs.rename(tempPath, webmFinalPath, (err) => {
@@ -183,17 +181,16 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
             },
           });
 
-          // La URL pública de Google Drive para descarga
           publicUrl = `https://drive.google.com/uc?id=${fileId}&export=download`;
-
-          // --- CAMBIO CLAVE AQUÍ ---
-          // La URL para reproducción directa ahora es la misma URL de Google Drive
-          playbackUrl = publicUrl;
+          // URL para reproducción directa desde tu propio servidor
+          // Asegúrate de que la URL base sea la de tu servicio en Render
+          playbackUrl = `https://eldrincook-voice-api.onrender.com/grabaciones/${baseFilename}.mp3`;
 
           res.json({
             message: "✅ Grabación subida, convertida y procesada con éxito.",
-            googleDriveUrl: publicUrl, // Para descarga (y ahora también para reproducción)
-            playbackUrl: playbackUrl, // Para reproducción directa (apunta a Google Drive)
+            googleDriveUrl: publicUrl, // Para descarga
+            playbackUrl: playbackUrl, // Para reproducción directa
+            //playbackUrl: playbackUrl, // Para reproducción directa
             nombre: `${baseFilename}.mp3`,
             fileId: fileId,
           });
